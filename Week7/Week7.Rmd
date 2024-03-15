@@ -7,9 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(GGally)
-library(MASS)
-library(ISLR2)
+library(pacman)
+p_load(GGally,MASS,ISLR2)
 ```
 
 Let's begin with a warm-up exercise from last week.

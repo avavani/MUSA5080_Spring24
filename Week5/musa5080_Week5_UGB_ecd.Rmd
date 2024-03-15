@@ -37,6 +37,9 @@ library(kableExtra)
 library(rmarkdown)
 library(RColorBrewer)
 library(classInt)
+library(scales)
+library(tmaptools)
+library(ggplot2)
 ```
 
 
@@ -87,6 +90,18 @@ tracts17 <-
          MedRent = B25058_001E) %>%
   dplyr::select(-NAME, -starts_with("B")) %>%
   mutate(area_sqFt = (as.numeric(st_area(.))))
+
+tracts17 <- tracts17 %>%
+  mutate(sq_miles = area_sqFt/27878400)%>%
+  mutate(popdens = TotalPop/sq_miles)
+
+ggplot()+
+  geom_sf(data = tracts17, aes(fill=popdens), color = "transparent")+
+  scale_fill_distiller(palette = "YlOr", direction = 1, breaks = "jenks")+
+  geom_sf(data = uga, fill = NA, color = "maroon", lwd = 0.25, linetype = 1)+
+  labs(fill = "Population per Sq Miles",
+       title = "Population Density in Lancaster County")+
+  theme_void()
 ```
 
 As a warm-up, calculate the population density of each tract. We will then try to make a slightly better choropleth map than the one we did previously.
@@ -149,6 +164,13 @@ map <- map +
 See the code below. Change to population density. Experiment with the settings. Try to add an outer border to the map indicating the county outline. 
 
 ```{r tmapversion}
+#installing t maps
+
+install_github("r-tmap/tmaptools")
+install_github("r-tmap/tmap")
+install.packages("tmap", repos = c("https://r-tmap.r-universe.dev", "https://cloud.r-project.org"))
+
+
 map_improved <- tm_shape(tracts17) +
   tm_polygons(fill = "TotalPop", style = "quantile", border.col = NA, n=6,title = "Population", palette = "YlGnBu" )+
   tm_layout(frame = FALSE,legend.frame = FALSE)+
@@ -168,6 +190,21 @@ map_improved
 
 ```
 
+```{r popdens_tmap}
+map_dens <- tm_shape(tracts17) +
+  tm_polygons(col = "popdens", style = "quantile", border.col = NA, n=6,
+              title = "Population Density", palette = "YlGnBu")+
+  tm_layout(frame = FALSE,legend.frame = FALSE,
+            title = "Population Density of Census Tracts in Lancaster County",
+            title.size = 0.5)+
+  tm_shape(uga)+
+  tm_borders(col = "maroon", lwd = 1.5)+
+  tm_add_legend(type = "line", col = "red", lwd = 1.5, labels = "Urban Growth Area")
+
+
+map_dens 
+
+```
 
 
 # Geoprocessing
@@ -265,7 +302,10 @@ ggplot() +
 Can we try to recreate this using tmap? Follow the formula above. Set the palette to the two colors
 
 ```{r buffer_plot_tmap}
-#Your Code Here!
+tm_shape(bothBuffers)+
+  tm_polygons(col = "Legend", palette = c("#F8766D", "#00BFC4"))+
+  tm_layout(legend.show = TRUE, title = "1/8mi Buffer Inside & Outside UGA",
+            title.size = 0.7)
 ```
 
 
@@ -285,7 +325,35 @@ buffersAndTowns <-
 # Challenge 1: Compare densities
 Can you make a table summarizing population density of tracts inside versus outside the boundary? (buffer)
 
+```{r}
+tracts_centroid <- st_centroid(tracts17)
+outside_polygons <- st_union(tracts17)%>%
+  st_as_sf()
 
+outside_polygons <- outside_polygons %>%
+  st_difference(uga_union)%>%
+  st_as_sf()%>%
+  mutate(Legend = "Outside")
+
+uga_union <- uga_union %>%
+  mutate(Legend = "Inside")%>%
+  rename(x = geometry)
+
+two_polygons <- rbind(outside_polygons, uga_union)
+
+joined_tracts <- tracts_centroid %>%
+  st_join(two_polygons)
+
+buffer_tracts <- joined_tracts %>%
+  group_by(Legend)%>%
+  summarize(People_per_sq_mile = mean(popdens))%>%
+  st_drop_geometry()
+
+kable(buffer_tracts)%>%
+  kable_styling()%>%
+  footnote(general_title = "\n",
+           general = "Table 1")
+```
 # Mapping Challenge 
 
 Find a way to map the inside and outside buffers nicely that distinguishes them from each other AND shows the municipalities they belong to. Try manipulating the colors (remember our palettes, and the `viridis` package? remember `scale_fill_manual`). Add geographic context. Add legends and titles and subtitles.
@@ -298,5 +366,11 @@ Think about ways to manipulate the `studyAreaTowns` data inside that text geom t
 
 Put all this code into a markdown chunk that runs correctly and allows this markdown to `knit`. Then see if you can manipulate the chunk options so that there aren't annoying warnings and other messages you don't want showing up in an assignment.
 
+```{r}
+ggplot()+
+  geom_sf(data = joined_tracts, aes(fill=Legend), colour = "maroon")+
+  geom_sf(data = bu)
+
+```
 
 note you are free to explore with both ggplot and tmap!

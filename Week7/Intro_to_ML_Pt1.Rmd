@@ -12,23 +12,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 # Load some libraries
-
-library(tidyverse)
-library(sf)
-library(spdep)
-library(caret)
-library(ckanr)
-library(FNN)
-library(grid)
-library(gridExtra)
-library(ggcorrplot) # plot correlation plot
-library(corrr)      # another way to plot correlation plot
-library(kableExtra)
-library(jtools)     # for regression model plots
-library(ggstance) # to support jtools plots
-library(ggpubr)    # plotting R^2 value on ggplot point scatter
-library(broom.mixed) # needed for effects plots
-library(RColorBrewer)
+library(pacman)
+p_load(tidyverse,sf,spdep,caret,ckanr,FNN,grid,gridExtra,ggcorrplot) # plot correlation plot
+p_load(corrr,kableExtra,jtools,ggstance,ggpubr,broom.mixed,RColorBrewer)
 
 
 # functions and data directory
@@ -49,7 +35,7 @@ The in-class exercise at the end encourages students to modify the existing code
 ```{r read_data}
 
 nhoods <- 
-  st_read("https://github.com/ECDelmelle/MUSA5080_Spring24/blob/main/Week7/BPDA_Neighborhood_Boundaries.geojson") %>%
+  st_read("BPDA_Neighborhood_Boundaries.geojson") %>%
   st_transform('ESRI:102286')
 
 ##If that is failing you, download the data to your own personal computer and link to the full path name. Sorry!
@@ -90,6 +76,8 @@ See if you can alter the size of the image output. Search for adjusting figure h
 ```{r price_map}
 # ggplot, reorder
 boston.sf$quintiles <- ntile(boston.sf$PricePerSq, 5)
+
+palette5 <- brewer.pal(5, "YlGnBu")
 # Mapping data
 ggplot() +
   geom_sf(data = nhoods, fill = "lightgrey", col = "white") +
