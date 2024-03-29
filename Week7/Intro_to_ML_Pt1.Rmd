@@ -40,7 +40,7 @@ nhoods <-
 
 ##If that is failing you, download the data to your own personal computer and link to the full path name. Sorry!
 
-nhoods <- st_read("~/Documents/MUSA508_Spring24/Week7/BPDA_Neighborhood_Boundaries.geojson")%>%
+nhoods <- st_read("~/Documents/public_policy_analytics/ppa/MUSA5080_Spring24/Week7/BPDA_Neighborhood_Boundaries.geojson")%>%
   st_transform('ESRI:102286')
 
 boston <- 
