@@ -10,10 +10,22 @@ Updated by E.C.Delmelle March 2024
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-install.packages("pacman")
-library(pacman)
-p_load(tidyverse,sf, spdep, caret, ckanr, FNN, grid, gridExtra, ggcorrplot,
-       jtools, broom, tufte, rmarkdown, kableExtra, tidycensus, RColorBrewer)
+library(tidyverse)
+library(sf)
+library(spdep) #for spatial autocorrelation
+library(caret)
+library(ckanr)
+library(FNN)
+library(grid)
+library(gridExtra)
+library(ggcorrplot)
+library(jtools)     # for regression model plots
+library(broom)
+library(tufte)
+library(rmarkdown)
+library(kableExtra)
+library(tidycensus)
+library(RColorBrewer)
 # functions and data directory
 root.dir = "https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/DATA/"
 
@@ -388,9 +400,9 @@ grid.arrange(ncol = 2,
 ```{r}
 st_join(bothRegressions, tracts17) %>% 
   filter(!is.na(incomeContext)) %>%
-  group_by(Regression, incomeContext) %>%
+  group_by(Regression, raceContext) %>%
   summarize(mean.MAPE = scales::percent(mean(SalePrice.APE, na.rm = T))) %>%
   st_drop_geometry() %>%
-  spread(incomeContext, mean.MAPE) %>%
+  spread(raceContext, mean.MAPE) %>%
   kable(caption = "Test set MAPE by neighborhood income context")
 ```
