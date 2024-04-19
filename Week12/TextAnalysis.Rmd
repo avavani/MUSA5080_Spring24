@@ -83,7 +83,7 @@ cltclusters<- cltdata %>%
   mutate(cluster4 = k4$cluster) %>%
   group_by(cluster4) %>%
   summarise_all("mean") %>%
-  select(-c("name10"))
+  dplyr::select(-c("name10"))
 kable(x=cltclusters)%>%kable_classic()
 
 ```
@@ -343,7 +343,7 @@ words$cluster4b[words$cluster4==4] <- 1
 
 ##split into testing and training dataset
 
-data_split<- zillow%>%select(USER_ID)
+data_split<- zillow%>%dplyr::select(USER_ID)
 data_split<- initial_split(data_split)
 train_data <- training(data_split)
 test_data <- testing(data_split)
@@ -361,7 +361,7 @@ word_rownames <- as.integer(rownames(sparse_words))
 
 data_joined <- data_frame(USER_ID = word_rownames) %>%
   left_join(zillow %>%
-              select(USER_ID, cluster1, cluster2, cluster3, cluster4b))
+              dplyr::select(USER_ID, cluster1, cluster2, cluster3, cluster4b))
 
 
 ```
@@ -421,7 +421,7 @@ classifications <- words %>%
 
 comment_classes <- classifications %>%
   left_join(zillow %>%
-              select(cluster1, USER_ID), by = "USER_ID") %>% #change here to clusterX 
+              dplyr::select(cluster1, USER_ID), by = "USER_ID") %>% #change here to clusterX 
   mutate(cluster1 = as.factor(cluster1)) #change here to clusterX 
 
 
